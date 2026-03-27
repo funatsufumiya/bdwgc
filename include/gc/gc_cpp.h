@@ -45,7 +45,7 @@ Collectible instances of non-class types can be allocated using `GC`
 
 ```
   typedef int A[10];
-  A *a = new (GC) A;
+  A *a = new (UseGC) A;
 ```
 
 Uncollectible instances of classes derived from `gc` can be allocated
@@ -74,7 +74,7 @@ object's destructors.  Explicit cleanup functions may be specified as
 an additional placement argument:
 
 ```
-    A *a = ::new (GC, MyCleanup) A;
+    A *a = ::new (UseGC, MyCleanup) A;
 ```
 
 An object is considered "accessible" by the collector if it can be
@@ -106,7 +106,7 @@ Cautions:
      ```
        class A: public gc {...};
        A *a1 = new A[10];      // collectible or uncollectible?
-       A *a2 = new (GC) A[10]; // collectible
+       A *a2 = new (UseGC) A[10]; // collectible
      ```
 
   3. The destructors of collectible arrays of objects derived from
@@ -114,7 +114,7 @@ Cautions:
 
      ```
        class A: public gc_cleanup {...};
-       A *a = new (GC) A[10]; // destructors not invoked correctly
+       A *a = new (UseGC) A[10]; // destructors not invoked correctly
      ```
      Typically, only the destructor for the first element of the array will
      be invoked when the array is garbage-collected.  To get all the
@@ -122,12 +122,13 @@ Cautions:
      cleanup function:
 
      ```
-       A *a = new (GC, MyCleanUp) A[10];
+       A *a = new (UseGC, MyCleanUp) A[10];
      ```
      (Implementing cleanup of arrays correctly, portably, and in a way
      that preserves the correct exception semantics, requires a language
      extension, e.g. the `gc` keyword.)
 
+  (Removed for https://github.com/jank-lang/jank/discussions/719)
   4. GC name conflicts: Many other systems seem to use the identifier `GC`
      as an abbreviation for "Graphics Context".  Thus, `GC` placement has
      been replaced by `UseGC`.  `GC` is an alias for `UseGC`, unless
@@ -246,9 +247,9 @@ namespace boehmgc
 
 enum GCPlacement {
   UseGC,
-#ifndef GC_NAME_CONFLICT
-  GC = UseGC,
-#endif
+// #ifndef GC_NAME_CONFLICT
+//   GC = UseGC,
+// #endif
   NoGC,
   PointerFreeGC
 #ifdef GC_ATOMIC_UNCOLLECTABLE
